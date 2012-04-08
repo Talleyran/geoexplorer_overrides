@@ -1,0 +1,36 @@
+
+V  .gitignore                              |    7 +-
+V  src/script/loader.js                    |   13 ++
+   src/script/locale/ru.js                 |  125 ++++++++----
+   src/script/plugins/AddLayers.js         |    4 +-
+V  src/script/plugins/ClickableFeatures.js |   53 +++++-
+V  src/script/plugins/FeatureEditor.js     |  336 +++++++++++++++++++++++++------
+V  src/script/plugins/FeatureEditorGrid.js |  243 ++++++++++++++++++++++
+V  src/script/plugins/FeatureGrid.js       |   44 +++--
+VO src/script/plugins/FeatureManager.js    |   50 ++++-
+V  src/script/plugins/GoogleSource.js      |   36 +++-
+VO src/script/plugins/LayerProperties.js   |    4 +-
+V  src/script/plugins/LayerSource.js       |   19 ++-
+   src/script/plugins/LayerTree.js         |   81 +++++---
+   src/script/plugins/OSMSource.js         |    3 +-
+   src/script/plugins/Print.js             |    6 +-
+   src/script/plugins/QueryForm.js         |  102 ++++++----
+   src/script/plugins/Styler.js            |   57 +++++-
+VO src/script/plugins/WMSCSource.js        |   58 +++++-
+   src/script/plugins/WMSGetFeatureInfo.js |   67 ++++++-
+VO src/script/plugins/WMSSource.js         |   10 +-
+   src/script/widgets/FeatureEditPopup.js  |  232 ++++++++--------------
+   src/script/widgets/FillSymbolizer.js    |    1 +
+   src/script/widgets/FilterBuilder.js     |    2 +-
+   src/script/widgets/NewSourceWindow.js   |   22 ++-
+   src/script/widgets/QueryPanel.js        |    4 +-
+   src/script/widgets/RulePanel.js         |   24 +-
+   src/script/widgets/StrokeSymbolizer.js  |    1 +
+   src/script/widgets/TextSymbolizer.js    |    4 +-
+   src/script/widgets/Viewer.js            |  107 +++++++++-
+VO src/script/widgets/WMSLayerPanel.js     |   74 +++++--
+   src/script/widgets/WMSStylesDialog.js   |   87 ++++++---
+   src/script/widgets/grid/FeatureGrid.js  |   50 ++++-
+   src/theme/img/silk/chart.png            |  Bin 0 -> 786 bytes
+   33 files changed, 1450 insertions(+), 476 deletions(-)
+
