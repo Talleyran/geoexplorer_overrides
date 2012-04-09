@@ -274,7 +274,7 @@
                     '<wps:Input>' +
                     '<ows:Identifier>aggregationAttribute</ows:Identifier>' +
                     '<wps:Data>' +
-                    '<wps:LiteralData>' + e.record.json[0].toLowerCase() + '</wps:LiteralData>' +
+                    '<wps:LiteralData>' + e.record.json[0] + '</wps:LiteralData>' +
                     '</wps:Data>' +
                     '</wps:Input>' +
 
@@ -428,15 +428,22 @@
     setFields:function(){
       var fieldsDataArray=[]
         ,fields=[]
+        ,upcasedFields=[] // X_X
 
       if(this.featureManager.schema) {
 
-        this.featureManager.schema.each(function(field){fields.push(field.get('name').toUpperCase())})
-        var translatedFieldNames = Gispro.Utils.translateSymbols("field",fields)
+        this.featureManager.schema.each(function(field){
+          fields.push(field.get('name'))
+          upcasedFields.push(field.get('name').toUpperCase())
+        })
+        var translatedFieldNames = Gispro.Utils.translateSymbols("field",upcasedFields)
 
         for(var i=0,len=fields.length;i<len;i++){
-          var field=fields[i],fieldName=translatedFieldNames[field]
-            ,show=this.layerRecord.get('queryableFields')?this.layerRecord.get('queryableFields').indexOf(field)!=-1:true
+          var field=fields[i]
+            ,upcasedField = upcasedFields[i]
+
+          ,fieldName=translatedFieldNames[upcasedField]
+          ,show=this.layerRecord.get('queryableFields')?this.layerRecord.get('queryableFields').indexOf(field)!=-1:true
 
           fieldsDataArray.push([field,fieldName,show])
         }
