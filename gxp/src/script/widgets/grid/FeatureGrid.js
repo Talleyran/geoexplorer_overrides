@@ -29,7 +29,7 @@
             if (this.schema) {
 
                 name = f.get("name");
-                header = Gispro.Utils.translateSymbols('field',[name.toUpperCase()])[name.toUpperCase()];
+                header = f.get("alias");
                 type = f.get("type").split(":").pop();
                 format = null;
                 switch (type) {
