@@ -60,6 +60,19 @@
             this.items.push(this.createStylesPanel(url));
         }
 
+        var colonPos = this.layerRecord.get("name").indexOf(":");
+        if(colonPos>0)
+        {
+            var esimoServiceParam = this.layerRecord.get("name").substring(0, colonPos);
+             this.items.push({
+                xtype: 'panel',
+                title: "Метаданные",
+                style: {"padding": "5px"},
+                //height: "auto",
+                html: "<iframe width=\"100%\" height=\"300\" src=\"http://www.esimo.ru/srbd_data/resource?id="+esimoServiceParam+"\"/>"
+             });
+        }
+
         gxp.WMSLayerPanel.superclass.initComponent.call(this);
     },
 
@@ -219,16 +232,16 @@
               id: 'name',
               header: this.getFeatureInfoPanelFieldNameHeader,
               dataIndex: 'name',
-              width: 90
           }, {
               header: this.getFeatureInfoPanelFieldTranslateHeader,
               dataIndex: 'translate',
-              width: 110
+              width: Ext.grid.GridView.autoFill,
           }, {
               xtype: 'checkcolumn',
               header: this.getFeatureInfoPanelFieldShowHeader,
               dataIndex: 'show',
               width: 80,
+              fixed:true,
               listeners: {
                 scope: this,
                 check: function(v, record, store){
@@ -238,7 +251,7 @@
                   var queryableFields = [];
                   store.each(function(el) {
                       if(el.get('show')){
-                        queryableFields.push(el.get('name'));
+                        queryableFields.push(el.get('name').toUpperCase());
                       }
                     }
                   );
@@ -250,6 +263,7 @@
               header: this.getFeatureInfoPanelFieldStatisticHeader,
               dataIndex: 'statistic',
               width: 70,
+              fixed:true,
               align: 'center',
               handler: function(e){
 
@@ -369,6 +383,12 @@
                         }
 
                       } else {
+                          Ext.MessageBox.show({
+                            title : _this.getFeatureInfoPanelFieldStatisticWindowTitle,
+                            msg : _this.statisticNotAvailableText,
+                            buttons: Ext.MessageBox.OK,
+                            minWidth: 300
+                          });
 
                       }
                     },
@@ -387,7 +407,8 @@
           cm: cm,
           stripeRows: true,
           height: 250,
-          width: 355
+          viewConfig:{forceFit:true},
+          width: '100%'
         });
 
         return {
@@ -426,34 +447,26 @@
 
     //ADDED
     setFields:function(){
+
       var fieldsDataArray=[]
-        ,fields=[]
-        ,upcasedFields=[] // X_X
 
       if(this.featureManager.schema) {
 
-        this.featureManager.schema.each(function(field){
-          fields.push(field.get('name'))
-          upcasedFields.push(field.get('name').toUpperCase())
-        })
-        var translatedFieldNames = Gispro.Utils.translateSymbols("field",upcasedFields)
+        this.featureManager.schema.each(
+          function(field){
+            var fieldName = field.get('name')
+              ,show=this.layerRecord.get('queryableFields') ? this.layerRecord.get('queryableFields').indexOf(fieldName.toUpperCase())!=-1:true
 
-        for(var i=0,len=fields.length;i<len;i++){
-          var field=fields[i]
-            ,upcasedField = upcasedFields[i]
-
-          ,fieldName=translatedFieldNames[upcasedField]
-          ,show=this.layerRecord.get('queryableFields')?this.layerRecord.get('queryableFields').indexOf(field)!=-1:true
-
-          fieldsDataArray.push([field,fieldName,show])
-        }
+            fieldsDataArray.push([fieldName,field.get('alias'),show])
+          } , this 
+        )
 
       }
 
       this.fieldsStore.loadData(fieldsDataArray)
     }
 
-
   })
+
 
 } )();
