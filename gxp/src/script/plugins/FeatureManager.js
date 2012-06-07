@@ -43,7 +43,7 @@
                 rules: [new OpenLayers.Rule({symbolizer: {display: "none"}})]
             })
         };
-        
+
         this.featureLayer = new OpenLayers.Layer.Vector(this.id, {
             displayInLayerSwitcher: false,
             visibility: false,
@@ -53,7 +53,7 @@
                 "vertex": this.style["all"]
             }, {extendDefault: false})    
         });
-        
+
         this.target.on({
             ready: function() {
                 this.target.mapPanel.map.addLayer(this.featureLayer);
@@ -127,7 +127,7 @@
                             fields.push(field);
                         }
                     }, this);
-                    
+
                     var protocolOptions = {
                         srsName: this.getProjection(record).getCode(),
                         url: schema.url,
