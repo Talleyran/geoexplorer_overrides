@@ -48,21 +48,36 @@
                 TRANSPARENT: config.transparent
             }, layer.params);
 
-            layer = new OpenLayers.Layer.WMS(
-                config.title || layer.name, 
-                layer.url, 
-                params, {
-                    attribution: layer.attribution,
-                    maxExtent: maxExtent,
-                    restrictedExtent: maxExtent,
-                    ratio: config.ratio || 1,
-                    visibility: ("visibility" in config) ? config.visibility : true,
-                    opacity: ("opacity" in config) ? config.opacity : 1,
-                    buffer: ("buffer" in config) ? config.buffer : 1,
-                    projection: layerProjection,
-                    singleTile: "singleTile" in config ? config.singleTile : false
-                }
-            );
+            if(!this.viewMangerUsed){
+              layer = new OpenLayers.Layer.WMS(
+                  config.title || layer.name, 
+                  layer.url, 
+                  params, {
+                      attribution: layer.attribution,
+                      maxExtent: maxExtent,
+                      restrictedExtent: maxExtent,
+                      ratio: config.ratio || 1,
+                      visibility: ("visibility" in config) ? config.visibility : true,
+                      opacity: ("opacity" in config) ? config.opacity : 1,
+                      buffer: ("buffer" in config) ? config.buffer : 1,
+                      projection: layerProjection,
+                      singleTile: "singleTile" in config ? config.singleTile : false
+                  }
+              );
+            }else{
+              layer = new OpenLayers.Layer.WMS(
+                  config.title || layer.name, 
+                  layer.url, 
+                  params, {
+                      attribution: layer.attribution,
+                      ratio: config.ratio || 1,
+                      visibility: ("visibility" in config) ? config.visibility : true,
+                      opacity: ("opacity" in config) ? config.opacity : 1,
+                      buffer: ("buffer" in config) ? config.buffer : 1,
+                      singleTile: "singleTile" in config ? config.singleTile : false
+                  }
+              );
+            }
 
             // data for the new record
             var data = Ext.applyIf({
@@ -76,7 +91,8 @@
                 restUrl: this.restUrl,
                 queryableFields: "queryableFields" in config ? config.queryableFields : null,
                 queryable: "queryable" in config ? config.queryable : original.get('queryable'),
-                singleTile: layer.singleTile
+                singleTile: layer.singleTile,
+                supportedProjections: []
             }, original.data);
 
             // add additional fields
@@ -87,7 +103,9 @@
                 {name: "fixed", type: "boolean"},
                 {name: "selected", type: "boolean"},
                 {name: "queryableFields"}, //Array
-                {name: "singleTile"} //Boolean
+                {name: "singleTile"}, //Boolean
+                {name: "supportedProjections"} //Array
+
             ];
             original.fields.each(function(field) {
                 fields.push(field);
@@ -122,6 +140,6 @@
         });
     }
 
-  })
+  });
 
 })();
