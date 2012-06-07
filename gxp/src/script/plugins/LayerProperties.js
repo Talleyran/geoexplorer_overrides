@@ -1,20 +1,12 @@
 (function() {
+
   Ext.apply(gxp.plugins.LayerProperties.prototype, {
-
-    //OVERRIDED width changed (for additional panels)
-    constructor: function(config) {
-        gxp.plugins.LayerProperties.superclass.constructor.apply(this, arguments);
-
-        if (!this.outputConfig) {
-            this.outputConfig = {
-                width: 390, //<
-                autoHeight: true
-            };
-        }
-    },
 
     //OVERRIDED featureManager added (for WMSLayerPanel)
     addOutput: function(config) {
+        //additional output setting
+        this.outputConfig.width = 420;
+
         config = config || {};
         var record = this.target.selectedLayer;
         var origCfg = this.initialConfig.outputConfig || {};
@@ -51,5 +43,5 @@
         }, config));
     }
 
-  })
+  });
 })();
