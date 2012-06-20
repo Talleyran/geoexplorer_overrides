@@ -79,6 +79,8 @@
               );
             }
 
+            var fileFormats = this.getFileFormats(config.source);
+
             // data for the new record
             var data = Ext.applyIf({
                 title: layer.name,
@@ -92,7 +94,8 @@
                 queryableFields: "queryableFields" in config ? config.queryableFields : null,
                 queryable: "queryable" in config ? config.queryable : original.get('queryable'),
                 singleTile: layer.singleTile,
-                supportedProjections: []
+                supportedProjections: [],
+                fileFormats: fileFormats
             }, original.data);
 
             // add additional fields
@@ -104,7 +107,8 @@
                 {name: "selected", type: "boolean"},
                 {name: "queryableFields"}, //Array
                 {name: "singleTile"}, //Boolean
-                {name: "supportedProjections"} //Array
+                {name: "supportedProjections"}, //Array
+                {name: "fileFormats"} //Array
 
             ];
             original.fields.each(function(field) {
@@ -117,6 +121,55 @@
         }
 
         return record;
+    },
+
+    getFileFormats: function(source){
+      var wfsCapabilitiesUrlArr = this.target.layerSources[source].url.split('/');
+      wfsCapabilitiesUrlArr.splice(wfsCapabilitiesUrlArr.length - 1, 1);
+      wfsCapabilitiesUrl = wfsCapabilitiesUrlArr.join('/') + '/wfs?request=getCapabilities';
+
+      var menuItems = [];
+
+      OpenLayers.Request.GET({
+        url: wfsCapabilitiesUrl,
+        async: false,
+        callback: function(request){
+
+          if(request.status == 200){
+
+            var nodes = request.responseXML.firstChild.childNodes;
+            for(var i=0; i<nodes.length; i++){
+              if( nodes[i].nodeName == "ows:OperationsMetadata"){
+                var operationsMetadataNode = nodes[i];
+                for(var j=0; j<operationsMetadataNode.childNodes.length; j++){
+                  if( operationsMetadataNode.childNodes[j].nodeName == 'ows:Operation' && operationsMetadataNode.childNodes[j].attributes.name && operationsMetadataNode.childNodes[j].attributes.name.value == 'GetFeature' ){
+                    var getFeatureNode = operationsMetadataNode.childNodes[j];
+                    for(var k=0; k<getFeatureNode.childNodes.length; k++){
+                      if( getFeatureNode.childNodes[k].nodeName == 'ows:Parameter' && getFeatureNode.childNodes[k].attributes.name && getFeatureNode.childNodes[k].attributes.name.value == 'outputFormat' ){
+
+                        var outputFormatNode = getFeatureNode.childNodes[k];
+
+                        for(var m=0; m<outputFormatNode.childNodes.length; m++){
+                          menuItems.push( outputFormatNode.childNodes[m].textContent );
+                        }
+
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+          }else{
+
+
+          }
+
+        },
+        scope: this
+      });
+      return menuItems;
+
     },
 
     //OVERRIDED fields added
