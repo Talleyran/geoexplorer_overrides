@@ -12,6 +12,7 @@
     defaultDownloadFormat: 'SHAPE-ZIP',
     downloadText: 'Download',
 
+    //ADDED
     clearLayers: function()
       {
         for(var key in this.drawLayers) {
@@ -23,6 +24,7 @@
         }
       },
 
+    //ADDED
     selectLayer: function(v)
       {
         this.clearLayers();
@@ -34,6 +36,7 @@
         }
       },
 
+    //OVERRIDED drawLayers added
     /** api: method[addActions]
      */
     addActions: function(actions) {
@@ -76,6 +79,7 @@
 
     },
 
+    //ADDED form for downloading file (terget for form)
     createIframe: function(id, root){
       var el = document.createElement('iframe');
       el.setAttribute('id',id);
@@ -84,6 +88,7 @@
       return el;
     },
 
+    //ADDED form for downloading file
     createForm: function(url, postData, target, root){
       var el = document.createElement('form');
       el.setAttribute('method', 'post');
@@ -104,6 +109,7 @@
       return el;
     },
 
+    //ADDED submit form for downloading file
     loadFile: function(url, postData){
       var id = 'queryFormIframe';
       var form = this.createForm( url, postData, id, document.body );
@@ -120,20 +126,24 @@
       iframe.removeAttribute('name');
     },
 
+    //ADDED
     downloadFormatsMenuItemHandler: function(menuItem){
       this.downloadFormat( menuItem.v );
     },
 
+    //ADDED
     downloadFormatsSplitBottonHandler: function(){
       this.downloadFormat( this.downloadableFormats.indexOf(this.defaultDownloadFormat) !== -1 ? this.defaultDownloadFormat : this.downloadableFormats[0] );
     },
 
+    //ADDED download selected format
     downloadFormat: function(format){
 
       var featureManager = this.target.tools[this.featureManager];
 
       var filters = [];
 
+      //TODO use record.get('fileFormats') instead of this query
       if (this.queryForm.spatialFieldset.collapsed !== true) {
 
           var t,v,input;
@@ -428,11 +438,6 @@
             },
 
 
-
-
-
-
-            //TODO http://docs.sencha.com/ext-js/3-4/#!/api/Ext.SplitButton
             {
                 text: this.downloadText,
                 iconCls: 'downloadIcon',
@@ -441,10 +446,6 @@
                 handler: this.downloadFormatsSplitBottonHandler,
                 scope: this
             }
-
-
-
-
 
 
             ]
