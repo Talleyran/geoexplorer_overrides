@@ -640,7 +640,39 @@ gxp.plugins.AddLayers = Ext.extend(gxp.plugins.Tool, {
         this.selectedSource = source;
         this.fireEvent("sourceselected", this, source);
     },
-    
+
+    //ADDED
+    selectOrAddSource: function(detail, callback){
+      var serverUrl = this.target.uploadUrl.split('/rest')[0]
+      var workspace = detail.import.targetWorkspsace.workspace.name
+      var sourceFound = false
+      for(key in this.target.layerSources){
+        var source = this.target.layerSources[key]
+        if( source.url == serverUrl + '/wms' || source.url == serverUrl + '/' + workspace + '/wms' ){
+
+          this.setSelectedSource( source )
+          callback()
+          sourceFound = true
+
+        }
+
+      }
+
+      if(!sourceFound) this.target.addLayerSource( {
+        config: {
+          url: serverUrl + '/' + workspace + '/wms',
+          restUrl: serverUrl + '/rest',
+          title: workspace
+        },
+        callback: function(key){
+          this.setSelectedSource(this.target.layerSources[key])
+          callback.apply(this);
+        },
+        scope: this
+      } )
+
+    },
+
     /** private: method[createUploadButton]
      *  If this tool is provided an ``upload`` property, a button will be created
      *  that launches a window with a :class:`gxp.LayerUploadPanel`.
@@ -649,7 +681,7 @@ gxp.plugins.AddLayers = Ext.extend(gxp.plugins.Tool, {
         var button;
         var uploadConfig = this.initialConfig.upload;
         // the url will be set in the sourceselected sequence
-        var url;
+        var url=this.target.uploadUrl;
         if (uploadConfig) {
             if (typeof uploadConfig === "boolean") {
                 uploadConfig = {};
@@ -658,7 +690,7 @@ gxp.plugins.AddLayers = Ext.extend(gxp.plugins.Tool, {
                 xtype: "button",
                 text: this.uploadText,
                 iconCls: "gxp-icon-filebrowse",
-                hidden: true,
+                //hidden: true,
                 handler: function() {
                     var panel = new gxp.LayerUploadPanel(Ext.apply({
                         url: url,
@@ -674,16 +706,23 @@ gxp.plugins.AddLayers = Ext.extend(gxp.plugins.Tool, {
                         },
                         listeners: {
                             uploadcomplete: function(panel, detail) {
-                                var layers = detail.layers;
-                                var names = {};
+                                var layers = detail["import"].tasks[0].items;
+                                var names = {}, resource, layer;
                                 for (var i=0, len=layers.length; i<len; ++i) {
-                                    names[layers[i].name] = true;
+                                    resource = layers[i].resource;
+                                    layer = resource.featureType || resource.coverage;
+                                    names[layer.namespace.name + ":" + layer.name] = true;
                                 }
+
+                                this.selectOrAddSource(detail, function(){
                                 this.selectedSource.store.load({
                                     callback: function(records, options, success) {
-                                        var gridPanel = this.capGrid.items.get(0);
-                                        var sel = gridPanel.getSelectionModel();
-                                        sel.clearSelections();
+                                        var gridPanel, sel;
+                                        if (this.capGrid && this.capGrid.isVisible()) {
+                                            gridPanel = this.capGrid.get(0).get(0);
+                                            sel = gridPanel.getSelectionModel();
+                                            sel.clearSelections();
+                                        }
                                         // select newly added layers
                                         var newRecords = [];
                                         var last = 0;
@@ -693,16 +732,27 @@ gxp.plugins.AddLayers = Ext.extend(gxp.plugins.Tool, {
                                                 newRecords.push(record);
                                             }
                                         });
-                                        sel.selectRecords(newRecords);
-                                        // this needs to be deferred because the 
-                                        // grid view has not refreshed yet
-                                        window.setTimeout(function() {
-                                            gridPanel.getView().focusRow(last);
-                                        }, 100);
+                                        //if (gridPanel) {
+                                            //// this needs to be deferred because the 
+                                            //// grid view has not refreshed yet
+                                            //window.setTimeout(function() {
+                                                //sel.selectRecords(newRecords);
+                                                //gridPanel.getView().focusRow(last);
+                                            //}, 100);
+                                        //} else {
+                                            this.addLayers(newRecords, undefined, true);
+                                        //}
                                     },
                                     scope: this
                                 });
-                                win.close();
+                                if (this.outputTarget) {
+                                    panel.hide();
+                                } else {
+                                    win.close();
+                                }
+
+                                });
+
                             },
                             scope: this
                         }
@@ -739,32 +789,79 @@ gxp.plugins.AddLayers = Ext.extend(gxp.plugins.Tool, {
                 }
             }
             
-            this.on({
-                sourceselected: function(tool, source) {
-                    button.hide();
-                    var show = false;
-                    if (this.isEligibleForUpload(source)) {
-                        // only works with GeoServer
-                        // if url is http://example.com/geoserver/ows, we
-                        // want http://example.com/geoserver/rest.
-                        var parts = source.url.split("/");
-                        parts.pop();
-                        parts.push("rest");
-                        // this sets the url for the layer upload panel
-                        url = parts.join("/");
-                        if (this.target.isAuthorized()) {
-                            // determine availability of upload functionality based
-                            // on a 405 for GET
-                            getStatus(url + "/upload", function(status) {
-                                button.setVisible(status === 405);
-                            }, this);
-                        }
-                    }
-                },
-                scope: this
-            });
+            //this.on({
+                //sourceselected: function(tool, source) {
+                    //button.hide();
+                    //var show = false;
+                    //if (this.isEligibleForUpload(source)) {
+                        //// only works with GeoServer
+                        //// if url is http://example.com/geoserver/ows, we
+                        //// want http://example.com/geoserver/rest.
+                        //var parts = source.url.split("/");
+                        //parts.pop();
+                        //parts.push("rest");
+                        //// this sets the url for the layer upload panel
+                        //url = parts.join("/");
+                        //if (this.target.isAuthorized()) {
+                            //// determine availability of upload functionality based
+                            //// on a 405 for GET
+                            //getStatus(url + "/upload", function(status) {
+                                //button.setVisible(status === 405);
+                            //}, this);
+                        //}
+                    //}
+                //},
+                //scope: this
+            //});
         }
         return button;
+    },
+
+    //ADDED from 354723574e
+    /** private: method[addLayers]
+     *  :arg records: ``Array`` the layer records to add
+     *  :arg source: :class:`gxp.plugins.LayerSource` The source to add from
+     *  :arg isUpload: ``Boolean`` Do the layers to add come from an upload?
+     */
+    addLayers: function(records, source, isUpload) {
+        source = source || this.selectedSource;
+        var layerStore = this.target.mapPanel.layers,
+            extent, record, layer;
+        for (var i=0, ii=records.length; i<ii; ++i) {
+            record = source.createLayerRecord({
+                name: records[i].get("name"),
+                source: source.id
+            });
+            if (record) {
+                layer = record.getLayer();
+                if (layer.maxExtent) {
+                    if (!extent) {
+                        extent = record.getLayer().maxExtent.clone();
+                    } else {
+                        extent.extend(record.getLayer().maxExtent);
+                    }
+                }
+                if (record.get("group") === "background") {
+                    layerStore.insert(0, [record]);
+                } else {
+                    layerStore.add([record]);
+                }
+            }
+        }
+        if (extent) {
+            this.target.mapPanel.map.zoomToExtent(extent);
+        }
+        if (isUpload && this.postUploadAction && records.length === 1 && record) {
+            // show LayerProperties dialog if just one layer was added
+            this.target.selectLayer(record);
+            var outputConfig,
+                actionPlugin = this.postUploadAction;
+            if (!Ext.isString(actionPlugin)) {
+                outputConfig = actionPlugin.outputConfig;
+                actionPlugin = actionPlugin.plugin;
+            }
+            this.target.tools[actionPlugin].addOutput(outputConfig);
+        }
     },
     
     /** private: method[isEligibleForUpload]
